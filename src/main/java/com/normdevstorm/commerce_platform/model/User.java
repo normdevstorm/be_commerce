@@ -1,7 +1,9 @@
 package com.normdevstorm.commerce_platform.model;
-
+import com.normdevstorm.commerce_platform.config.validate.CustomValidation;
+import com.normdevstorm.commerce_platform.enums.Role;
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.Set;
@@ -10,7 +12,18 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User extends Account{
+public class User{
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private long id;
+    @NotBlank(message = "Username is mandatory")
+    private String username;
+    @CustomValidation(message = "Password should be valid!!!")
+    @NotBlank(message = "Password is mandatory")
+    private String password;
+    @Column(columnDefinition = "role default 'user'")
+    @Enumerated(EnumType.STRING)
+    private Role role;
     @NonNull
     private String firstName;
     @NonNull
