@@ -1,7 +1,4 @@
 package com.normdevstorm.commerce_platform.repository;
 
-import com.normdevstorm.commerce_platform.model.Payment;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends org.springframework.data.jpa.repository.JpaRepository<com.normdevstorm.commerce_platform.model.Payment, java.util.UUID> {
 }
