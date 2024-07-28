@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -14,9 +16,9 @@ import java.time.LocalDateTime;
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID transactionId;
     @ManyToOne
-    @JoinColumn(referencedColumnName = "user_id")
+    @JoinColumn(referencedColumnName = "userId")
     private User user;
     private double total;
     private LocalDateTime createAt;

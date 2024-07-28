@@ -1,4 +1,9 @@
 package com.normdevstorm.commerce_platform.repository;
 
-public interface ReviewRepository extends org.springframework.data.jpa.repository.JpaRepository<com.normdevstorm.commerce_platform.model.Review, java.util.UUID> {
+import com.normdevstorm.commerce_platform.model.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface ReviewRepository extends JpaRepository<Review, UUID> {
 }

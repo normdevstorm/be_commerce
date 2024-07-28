@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -15,13 +16,13 @@ import java.util.Set;
 public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private long id;
+    private UUID userId;
     @NotBlank(message = "Username is mandatory")
     private String username;
     @CustomValidation(message = "Password should be valid!!!")
     @NotBlank(message = "Password is mandatory")
     private String password;
-    @Column(columnDefinition = "role default 'user'")
+//    @Column(columnDefinition = "default 'admin'")
     @Enumerated(EnumType.STRING)
     private Role role;
     @NonNull
@@ -32,7 +33,7 @@ public class User{
     @NonNull
     private String phoneNumber;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_address", joinColumns = {@JoinColumn(name = "user_id")},inverseJoinColumns = {@JoinColumn(name = "address_id")})
+    @JoinTable(name = "user_address", joinColumns = {@JoinColumn(name = "userId")},inverseJoinColumns = {@JoinColumn(name = "addressId")})
     private Set<Address> address;
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Nullable

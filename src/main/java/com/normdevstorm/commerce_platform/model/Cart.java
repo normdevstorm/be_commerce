@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.mapping.Set;
 
+import java.util.UUID;
+
 ///todo: note down  composite key, how to define , use and persist
 @Entity
 @Data
@@ -16,9 +18,10 @@ import org.hibernate.mapping.Set;
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String userId;
+    private UUID user;
     @Id
-    private String product;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID product;
     @NotNull
     private long quantity;
 }

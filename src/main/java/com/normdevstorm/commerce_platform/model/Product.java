@@ -10,6 +10,8 @@ import lombok.NonNull;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -17,7 +19,7 @@ import java.util.Set;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private long id;
+    private UUID productId;
     @NonNull
     private String name;
     ///todo: add value later on
@@ -25,7 +27,7 @@ public class Product {
     private Category category;
     @Nullable
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinColumn(referencedColumnName = "brand_id")
+    @JoinColumn(referencedColumnName = "brandId")
     private Brand brand;
     @NonNull
     private long stockQuantity;

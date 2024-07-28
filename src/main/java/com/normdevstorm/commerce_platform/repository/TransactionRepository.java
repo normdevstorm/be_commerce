@@ -1,4 +1,9 @@
 package com.normdevstorm.commerce_platform.repository;
 
-public interface TransactionRepository extends org.springframework.data.jpa.repository.JpaRepository<com.normdevstorm.commerce_platform.model.Transaction, java.util.UUID> {
+import com.normdevstorm.commerce_platform.model.Transaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 }

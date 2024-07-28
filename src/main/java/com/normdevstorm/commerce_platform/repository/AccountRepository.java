@@ -1,4 +1,9 @@
 package com.normdevstorm.commerce_platform.repository;
 
-public interface AccountRepository extends org.springframework.data.jpa.repository.JpaRepository<com.normdevstorm.commerce_platform.model.Account, java.util.UUID> {
+import com.normdevstorm.commerce_platform.model.Account;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface AccountRepository extends JpaRepository<Account, UUID> {
 }

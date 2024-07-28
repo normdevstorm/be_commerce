@@ -1,4 +1,9 @@
 package com.normdevstorm.commerce_platform.repository;
 
-public interface AddressRepository extends org.springframework.data.jpa.repository.JpaRepository<com.normdevstorm.commerce_platform.model.Address, java.util.UUID> {
+import com.normdevstorm.commerce_platform.model.Address;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface AddressRepository extends JpaRepository<Address, UUID> {
 }

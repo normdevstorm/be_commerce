@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -15,7 +16,7 @@ import java.util.Set;
 public class Brand {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID brandId;
     @NonNull
     private String name;
     private String about;
