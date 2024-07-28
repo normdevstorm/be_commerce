@@ -30,7 +30,5 @@ class CommercePlatformApplicationTests {
 		Account newAcc = new Account(UUID.randomUUID(), "Nguyen nanm", "123234udfs", Role.USER);
 		Account result = accountRepository.findAll().get(0);
 		System.out.println(result.getAccountId().toString());
-
-
 	}
 }
