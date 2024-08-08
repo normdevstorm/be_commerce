@@ -1,16 +1,16 @@
-package com.normdevstorm.commerce_platform.model;
+package com.normdevstorm.commerce_platform.entity;
 
+import com.normdevstorm.commerce_platform.entity.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Brand {
@@ -19,6 +19,7 @@ public class Brand {
     private UUID brandId;
     @NonNull
     private String name;
+    @Size(max = 25000)
     private String about;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,mappedBy = "brand")
     private Set<Product> products;

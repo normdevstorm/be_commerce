@@ -1,7 +1,7 @@
-package com.normdevstorm.commerce_platform.model;
+package com.normdevstorm.commerce_platform.entity;
 
-import com.normdevstorm.commerce_platform.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,14 +13,14 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Transaction {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID transactionId;
-    @ManyToOne
+    private UUID reviewId;
+    @ManyToOne()
     @JoinColumn(referencedColumnName = "userId")
     private User user;
-    private double total;
-    private LocalDateTime createAt;
-    private Status status;
+    @Size(max = 200, message = "Feedback should exceed 300 characters")
+    private String feedback;
+    private LocalDateTime createdAt;
 }

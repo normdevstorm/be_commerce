@@ -1,5 +1,7 @@
-package com.normdevstorm.commerce_platform.model;
+package com.normdevstorm.commerce_platform.entity;
 
+import com.normdevstorm.commerce_platform.entity.Product;
+import com.normdevstorm.commerce_platform.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +9,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor

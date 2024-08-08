@@ -1,5 +1,6 @@
-package com.normdevstorm.commerce_platform.model;
+package com.normdevstorm.commerce_platform.entity;
 
+import com.normdevstorm.commerce_platform.config.validate.CustomPasswordValidation;
 import com.normdevstorm.commerce_platform.config.validate.CustomValidation;
 import com.normdevstorm.commerce_platform.enums.Role;
 import jakarta.annotation.Nullable;
@@ -26,10 +27,9 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID accountId;
-    @NotBlank(message = "Username is mandatory")
-    private String username;
-    @CustomValidation(message = "Password should be valid!!!")
     @NotBlank(message = "Password is mandatory")
+    private String username;
+    @CustomPasswordValidation(message = "Password should be valid!!!")
     private String password;
     ///syntax to set a default enum value for a field
     @Enumerated(EnumType.STRING)

@@ -1,11 +1,10 @@
-package com.normdevstorm.commerce_platform.model;
+package com.normdevstorm.commerce_platform.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.mapping.Set;
 
 import java.util.UUID;
 
