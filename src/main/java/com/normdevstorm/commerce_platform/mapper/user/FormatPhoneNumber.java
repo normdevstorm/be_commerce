@@ -1,6 +1,5 @@
 package com.normdevstorm.commerce_platform.mapper.user;
 
-import com.normdevstorm.commerce_platform.dto.user.UserRequestDto;
 import org.mapstruct.Qualifier;
 
 import java.lang.annotation.ElementType;

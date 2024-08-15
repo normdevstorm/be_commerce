@@ -11,6 +11,7 @@ import com.normdevstorm.commerce_platform.entity.Payment;
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +23,10 @@ import java.util.Set;
 public class UserRequestDto {
     @NotBlank(message = "Username is mandatory")
     private String username;
-    @CustomPasswordValidation(message = "Password should be valid!!!")
-    @NotBlank(message = "Password is mandatory")
+//    @CustomPasswordValidation(message = "Password should be valid!!!")
+//    @NotBlank(message = "Password is mandatory")
     private String password;
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Value("USER")
     private Role role;
@@ -37,10 +38,10 @@ public class UserRequestDto {
     private String lastName;
     @NotBlank
     private String phoneNumber;
-//    @Nullable
-//    @JsonIgnoreProperties("user")
-//    private Set<Address> address;
-//    @Nullable
-//    @JsonIgnoreProperties("user")
-//    private Set<PaymentRequestDto> payments;
+    @Nullable
+    @JsonIgnoreProperties("user")
+    private Set<Address> address;
+    @Nullable
+    @JsonIgnoreProperties("user")
+    private Set<PaymentRequestDto> payments;
 }

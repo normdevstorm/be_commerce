@@ -22,16 +22,16 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID productId;
-    @NonNull
+//    @NonNull
     private String name;
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
     private Category category;
-    @Nullable
+//    @Nullable
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinColumn(referencedColumnName = "brandId")
     private Brand brand;
     private long stockQuantity;
-    @Size(max = 15000)
+//    @Size(max = 15000)
     private String desciption;
     private double originalPrice;
     private double salePrice;
@@ -41,6 +41,6 @@ public class Product {
     // persist a map type with this annotation
     @ElementCollection
     private Map<String, String> otherAttributes;
-    @NonNull
+//    @NonNull
     private LocalDateTime createdAt;
 }

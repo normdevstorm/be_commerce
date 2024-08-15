@@ -1,5 +1,6 @@
 package com.normdevstorm.commerce_platform.config.validate;
 
+import com.normdevstorm.commerce_platform.util.ConstantManager;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -13,7 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface CustomPhoneNumValidation {
     ///todo: Specifically validates Viet Nam phone numbers
-    String message() default "Phone number should comply to this format '${ConstantManager.phoneNumbeFormat}'";
+    String message() default "Phone number should comply to this format: +84-XX-XXX-XXXX";
 
     Class<?>[] groups() default {};
 

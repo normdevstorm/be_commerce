@@ -8,9 +8,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-///todo: validate by implementation
 @Constraint(validatedBy = PasswordConstraintValidator.class)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface CustomPasswordValidation {
     String message() default "Invalid password";

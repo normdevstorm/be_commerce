@@ -2,6 +2,7 @@ package com.normdevstorm.commerce_platform.exception;
 
 import com.normdevstorm.commerce_platform.model.GenericException;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<GenericException> methodArgumentNotValidException(BadCredentialsException e){
         GenericException exceptionGenericResponse = GenericException.builder().timestamp(new Date()).status(HttpStatus.BAD_REQUEST).details("error").message(e.getMessage()).build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(exceptionGenericResponse);
+    }
+    @ExceptionHandler(value = {MalformedJwtException.class})
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<GenericException> malformedJwtExceptionHandler(MalformedJwtException e){
+        GenericException exceptionGenericResponse = GenericException.builder().timestamp(new Date()).status(HttpStatus.UNAUTHORIZED).details("error").message(e.getMessage()).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED.value()).body(exceptionGenericResponse);
     }
 
 }

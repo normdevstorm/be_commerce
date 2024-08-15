@@ -27,7 +27,7 @@ import java.util.UUID;
 public class User implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JsonIgnore(value = true)
+//    @JsonIgnore(value = true)
     private UUID userId;
     @NotBlank(message = "Username is mandatory")
     @Column(unique = true)
@@ -58,9 +58,6 @@ public class User implements UserDetails{
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Nullable
     private Set<Transaction> transactions;
-
-
-    //custom Builder to exclude the UUID from manually set
     @Builder
     public User(final String username, final String password, final Role role, final @NonNull String firstName, final @NonNull String lastName, final @NonNull String phoneNumber, @jakarta.annotation.Nullable final Set<Address> address, @jakarta.annotation.Nullable final Set<Payment> payments) {
         this.username = username;

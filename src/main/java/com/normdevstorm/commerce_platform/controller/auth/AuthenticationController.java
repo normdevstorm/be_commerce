@@ -2,18 +2,15 @@ package com.normdevstorm.commerce_platform.controller.auth;
 
 import com.normdevstorm.commerce_platform.dto.user.UserRequestDto;
 import com.normdevstorm.commerce_platform.entity.User;
-import com.normdevstorm.commerce_platform.exception.GlobalExceptionHandler;
 import com.normdevstorm.commerce_platform.model.auth.response.LoginResponse;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import com.normdevstorm.commerce_platform.service.AuthenticationService;
 import com.normdevstorm.commerce_platform.service.JwtService;
-import io.swagger.v3.oas.annotations.headers.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -49,6 +46,7 @@ public class AuthenticationController {
             String jwtToken = jwtService.generateToken(authenticatedUser);
             LoginResponse loginResponse = new LoginResponse().builder().token(jwtToken).expiresIn(jwtService.getExpirationTime()).build();;
             GenericResponse genericResponse = GenericResponse.builder().message("Login succeeded!!!").success(true).data(loginResponse).build();
+            jwtService.extractClaim(jwtToken, claims -> claims.getSubject());
             return ResponseEntity.ok(genericResponse);
         } catch (UsernameNotFoundException e){
             logger.error(e.getMessage());

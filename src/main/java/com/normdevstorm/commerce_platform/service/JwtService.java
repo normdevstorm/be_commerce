@@ -1,6 +1,7 @@
 package com.normdevstorm.commerce_platform.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -68,6 +69,11 @@ public class JwtService {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
+    public boolean isTokenValid(String token, String requestUsername) {
+        final String username = extractUsername(token);
+        return (username.equals(requestUsername)) && !isTokenExpired(token);
+    }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

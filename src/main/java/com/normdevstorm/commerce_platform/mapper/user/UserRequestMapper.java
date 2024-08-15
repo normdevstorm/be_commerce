@@ -28,7 +28,7 @@ public interface UserRequestMapper {
 
     @DeformatPhoneNumber
     public static   String deformatPhoneNumber(String formattedPhoneNumber){
-        String firstCluster = formattedPhoneNumber.substring(3, 6);
+        String firstCluster = formattedPhoneNumber.substring(4, 6);
         String secondCluster = formattedPhoneNumber.substring(7, 10);
         String thirdCluster = formattedPhoneNumber.substring(11);
         String unformattedPhoneNumber = firstCluster + secondCluster + thirdCluster;
@@ -39,6 +39,7 @@ public interface UserRequestMapper {
     @BeanMapping(
             nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
     )
+    @Mapping(target = "user.phoneNumber", source = "userRequestDto.phoneNumber",qualifiedBy = FormatPhoneNumber.class)
     User partialUpdate(UserRequestDto userRequestDto, @MappingTarget User user);
 
 }
