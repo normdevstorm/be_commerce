@@ -1,8 +1,10 @@
 package com.normdevstorm.commerce_platform.dto.cart;
 
+import com.normdevstorm.commerce_platform.dto.product.ProductResponseDTO;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -11,6 +13,6 @@ import java.util.UUID;
 @Value
 public class CartResponseDto implements Serializable {
     UUID user;
-    UUID product;
+    Set<ProductResponseDTO> products;
     long quantity;
 }

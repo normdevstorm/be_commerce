@@ -6,6 +6,7 @@ import org.mapstruct.*;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CartRequestMapper {
+
     Cart toEntity(CartRequestDto cartRequestDto);
 
     CartRequestDto toDto(Cart cart);

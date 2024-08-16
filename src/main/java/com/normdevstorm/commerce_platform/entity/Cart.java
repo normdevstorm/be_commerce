@@ -13,14 +13,17 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(CartId.class)
+//@IdClass(CartId.class)
 public class Cart {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID user;
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID product;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.UUID)
+//    private UUID user;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.UUID)
+//    private UUID product;
+    @EmbeddedId
+    private CartId cartId;
+
     @NotNull
     private long quantity;
 }

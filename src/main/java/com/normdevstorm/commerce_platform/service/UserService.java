@@ -43,4 +43,9 @@ public class UserService {
         userRepository.save(user);
         return userResponseMapper.toUserDto(user);
     }
+
+    public UserResponseDto findByUsername(String username){
+        return userResponseMapper.toUserDto(userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found !!!")));
+    }
+
 }

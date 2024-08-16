@@ -85,6 +85,11 @@ public class ProductService {
         return productSet;
     }
 
+
+    public ProductResponseDTO getProductById(UUID productId){
+        ///exception handling later on w/ specific typa errors
+        return productResponseMapper.toProductResponseDTO(productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found")));
+    }
     private Brand findBrand(ProductRequestDTO productRequestDTO, boolean isUpdate) {
         BrandRequestDto brandRequestDto = productRequestDTO.getBrand();
         try {

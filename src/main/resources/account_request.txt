@@ -1,0 +1,103 @@
+{
+  "id": "cb2659a9-4cba-11ef-a28e-98e743588a2d",
+  "username": "mikejohnson",
+  "password": "password789",
+  "role": "USER",
+  "firstName": "Mike",
+  "lastName": "Johnson",
+  "phoneNumber": "1122334455"
+}
+--------------------------------
+
+{
+  "id": "cb2659a9-4cba-11ef-a28e-98e743588a2d",
+  "username": "mikejohnson",
+  "password": "password789",
+  "role": "USER",
+  "firstName": "Mike",
+  "lastName": "Johnson",
+  "phoneNumber": "1122334455"
+}
+
+---------------------------------------------------
+{
+  "username": "emilydavis",
+  "password": "password012",
+  "role": "ADMIN",
+  "firstName": "Ereren",
+  "lastName": "Bieber",
+  "phoneNumber": "233445566"
+}
+------------------------------------
+{
+  "success": true,
+  "message": "Add products successfully!!!",
+  "data": [
+    {
+      "productId": "c08f3ab5-5adc-4e67-95d9-ad733439f9f3",
+      "name": "Wireless Earbuds",
+      "category": "ELECTRONICS",
+      "brand": {
+        "brandId": "60ec002f-9faa-4d7e-a97a-09df5c927b79",
+        "name": "SoundMax",
+        "about": "Premium audio devices."
+      },
+      "stockQuantity": 100,
+      "desciption": null,
+      "originalPrice": 149.99,
+      "salePrice": 129.99,
+      "starRate": "FOUR",
+      "reviews": [],
+      "otherAttributes": {
+        "connectivity": "Bluetooth 5.0",
+        "batteryLife": "24-hour battery life",
+        "waterResistance": "Water-resistant"
+      },
+      "createdAt": "2024-08-16T11:07:17.904"
+    },
+    {
+      "productId": "6377e200-ceef-453f-8d45-f6e698df8b37",
+      "name": "Smartphone",
+      "category": "ELECTRONICS",
+      "brand": {
+        "brandId": "f5386a6f-37ea-48b4-82ba-73a7a2e714b1",
+        "name": "TechBrand",
+        "about": "Innovative technology solutions."
+      },
+      "stockQuantity": 50,
+      "desciption": null,
+      "originalPrice": 699.99,
+      "salePrice": 599.99,
+      "starRate": "FOUR",
+      "reviews": [],
+      "otherAttributes": {
+        "connectivity": "5G",
+        "storageCapacity": "128GB",
+        "displayType": "OLED Display"
+      },
+      "createdAt": "2024-08-16T11:07:17.904"
+    },
+    {
+      "productId": "8c85ce88-9bcf-4744-8471-27c00a7c831f",
+      "name": "Laptop",
+      "category": "ELECTRONICS",
+      "brand": {
+        "brandId": "6d02f99a-22a2-4fb1-a28b-5be33b8a5e51",
+        "name": "ComputePro",
+        "about": "High-performance computing devices."
+      },
+      "stockQuantity": 30,
+      "desciption": null,
+      "originalPrice": 1199.99,
+      "salePrice": 1099.99,
+      "starRate": "FIVE",
+      "reviews": [],
+      "otherAttributes": {
+        "ramSize": "16GB",
+        "storageType": "512GB SSD",
+        "displayQuality": "Retina Display"
+      },
+      "createdAt": "2024-08-16T11:07:17.904"
+    }
+  ]
+}
