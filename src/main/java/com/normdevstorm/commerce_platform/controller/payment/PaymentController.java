@@ -39,8 +39,8 @@ public class PaymentController {
 
     }
 
-    @PostMapping("/create")
-    public Object createPayment(@RequestParam String method,
+    @RequestMapping(value = "/create", method = {RequestMethod.POST, RequestMethod.GET})
+        public Object createPayment(@RequestParam String method,
                               @RequestParam Double amount,
                               @RequestParam String currency,
                               @RequestParam String description
@@ -52,10 +52,10 @@ public class PaymentController {
             for (Links link : payment.getLinks()
             ) {
                 if (link.getRel().equals("approval_url")) {
-//                    //web platform
-                    return new ModelAndView(new RedirectView(link.getHref()));
+                    //web platform
+//                    return new ModelAndView(new RedirectView(link.getHref()));
 //                    return response to mobile app
-//                    return Optional.ofNullable(ResponseEntity.ok(GenericResponse.<PayPalPaymentResponse>builder().success(true).message("Payment creation is processing !!!").data(new PayPalPaymentResponse(link.getHref())).build()));
+                    return Optional.ofNullable(ResponseEntity.ok(GenericResponse.<PayPalPaymentResponse>builder().success(true).message("Payment creation is processing !!!").data(new PayPalPaymentResponse(link.getHref())).build()));
                 }
             }
         } catch (PayPalRESTException e) {
@@ -70,9 +70,9 @@ public class PaymentController {
             Payment payment = payPalService.executePayment(payerId, paymentId);
             boolean isSuccess = payment.getState().equals("approved");
             //mobile
-//            return Optional.of(  isSuccess ? ResponseEntity.ok(GenericResponse.builder().success(true).message("Payment succeeded !!!").data("").build()) : ResponseEntity.notFound());
+            return Optional.of(  isSuccess ? ResponseEntity.ok(GenericResponse.builder().success(true).message("Payment succeeded !!!").data("").build()) : ResponseEntity.notFound());
             //web
-            return new ModelAndView("paymentSuccess");
+//            return new ModelAndView("paymentSuccess");
         } catch (PayPalRESTException e) {
             log.error("Error occurred:: ", e);
         }
@@ -82,14 +82,14 @@ public class PaymentController {
     @GetMapping("/cancel")
     public Object paymentCancel() {
         //web
-        return new ModelAndView("paymentCancel");
+//        return new ModelAndView("paymentCancel");
         //mobile app
-//        return Optional.of(ResponseEntity.ok(GenericResponse.builder().message("Payment canceled !!!").data("").success(false).build()));
+        return Optional.of(ResponseEntity.ok(GenericResponse.builder().message("Payment canceled !!!").data("").success(false).build()));
     }
 
     @GetMapping("/error")
     public Object paymentError() {
-        return new ModelAndView("paymentError");
-//        return Optional.of(ResponseEntity.ok(GenericResponse.builder().success(false).message("Got an error trying to process the payment!!!").data("").build()));
+//        return new ModelAndView("paymentError");
+        return Optional.of(ResponseEntity.ok(GenericResponse.builder().success(false).message("Got an error trying to process the payment!!!").data("").build()));
     }
 }

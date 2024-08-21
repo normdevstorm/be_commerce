@@ -6,8 +6,8 @@ import org.mapstruct.*;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TransactionResponseMapper {
-    Transaction toEntity(TransactionResponseDto transactionResponseDto);
-
+//    Transaction toEntity(TransactionResponseDto transactionResponseDto);
+    @Mapping(target = "userId", source = "transaction.user.userId")
     TransactionResponseDto toDto(Transaction transaction);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
