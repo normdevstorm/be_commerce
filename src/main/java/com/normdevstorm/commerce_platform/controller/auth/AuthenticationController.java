@@ -38,7 +38,6 @@ public class AuthenticationController {
            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         }
     }
-
     @PostMapping("/login")
     public ResponseEntity<GenericResponse> authenticate(@RequestBody UserRequestDto loginUserDto) {
         try{

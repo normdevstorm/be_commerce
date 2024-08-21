@@ -21,7 +21,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import java.io.IOException;
 
 /// this one is also called as middlleware
-///todo: do research on this one to figure out what it helps really
 @Slf4j
 @Component
 // retrieve the JWT token in the header “Authorization”, and validate it:
@@ -50,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
+            final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);

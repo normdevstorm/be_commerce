@@ -23,6 +23,8 @@ public class UserResponseDto implements Serializable {
     private String firstName;
     private String lastName;
     private String phoneNumber;
+    private String email;
+
     @Nullable
     @JsonIgnoreProperties("user")
     private Set<Address> address;

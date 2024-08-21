@@ -1,3 +1,5 @@
+ACCOUNT TEST
+
 {
   "id": "cb2659a9-4cba-11ef-a28e-98e743588a2d",
   "username": "mikejohnson",
@@ -27,6 +29,13 @@
   "firstName": "Ereren",
   "lastName": "Bieber",
   "phoneNumber": "233445566"
+}
+
+
+
+{
+    "username": "2024normdevstor",
+    "password": "normdevstormhihi2024",
 }
 ------------------------------------
 {
@@ -101,3 +110,9 @@
     }
   ]
 }
+
+-----------------------------------------
+mail generated password: "nitn fqoe cqna bxyz"
+------------------------------------------
+stored value: $2a$10$lKW2KoZiLYBgb9djpQ0lk.rVjfnqBdJf7uUSD28juQkawLOPp.SvW
+$2a$10$Tt6G0uXb52TIlHpXzx7r6uXdd57ffwe5vcpy9Vlr3Mrzv5yuCxQPK

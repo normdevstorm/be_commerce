@@ -41,15 +41,11 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource  corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080/normdevstorm", "https://www.sandbox.paypal.com"));
         configuration.setAllowedMethods(List.of("GET","POST"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**",configuration);
-
         return source;
     }
 }

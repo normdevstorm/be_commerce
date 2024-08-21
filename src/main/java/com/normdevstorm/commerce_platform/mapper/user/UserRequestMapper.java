@@ -10,7 +10,7 @@ import org.mapstruct.factory.Mappers;
 public interface UserRequestMapper {
     UserRequestMapper INSTANCE = Mappers.getMapper( UserRequestMapper.class );
     @Mapping(target = "phoneNumber", source = "userRequestDto.phoneNumber",qualifiedBy = FormatPhoneNumber.class)
-    User toUser(UserRequestDto userRequestDto);
+    User  toUser(UserRequestDto userRequestDto);
 
     @Mapping(target = "phoneNumber", source = "user.phoneNumber",qualifiedBy = DeformatPhoneNumber.class)
     UserRequestDto toUserDto(User user);

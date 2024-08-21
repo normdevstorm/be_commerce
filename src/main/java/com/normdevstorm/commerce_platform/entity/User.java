@@ -6,6 +6,7 @@ import com.normdevstorm.commerce_platform.config.validate.CustomPhoneNumValidati
 import com.normdevstorm.commerce_platform.enums.Role;
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -35,7 +36,11 @@ public class User implements UserDetails{
     @CustomPasswordValidation(message = "Password should be valid!!!")
     @NotBlank(message = "Password is mandatory")
     private String password;
-//    @Column(columnDefinition = "default 'admin'")
+    ///todo: add regex to validate email later
+    @Email
+    @Nullable
+    private String email;
+    //    @Column(columnDefinition = "default 'admin'")
     @Enumerated(EnumType.STRING)
     @ColumnDefault(value = "USER")
     private Role role;
@@ -58,8 +63,10 @@ public class User implements UserDetails{
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Nullable
     private Set<Transaction> transactions;
+//    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
     @Builder
-    public User(final String username, final String password, final Role role, final @NonNull String firstName, final @NonNull String lastName, final @NonNull String phoneNumber, @jakarta.annotation.Nullable final Set<Address> address, @jakarta.annotation.Nullable final Set<Payment> payments) {
+    public User(final String username, final String password, final Role role, final @NonNull String firstName, final @NonNull String lastName, final @NonNull String phoneNumber, @jakarta.annotation.Nullable final Set<Address> address, @jakarta.annotation.Nullable final Set<Payment> payments, @Nullable String email) {
         this.username = username;
         this.password = password;
         this.role = role;
@@ -68,6 +75,7 @@ public class User implements UserDetails{
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.payments = payments;
+        this.email = email;
     }
 
     @Override
