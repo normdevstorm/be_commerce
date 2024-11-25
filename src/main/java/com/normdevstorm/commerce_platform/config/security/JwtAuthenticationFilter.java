@@ -3,6 +3,7 @@ package com.normdevstorm.commerce_platform.config.security;
 import com.normdevstorm.commerce_platform.exception.GlobalExceptionHandler;
 import com.normdevstorm.commerce_platform.service.JwtService;
 import io.jsonwebtoken.MalformedJwtException;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,12 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-            final String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        final String authHeader = extractToken(request, response, filterChain);
+        if (authHeader == null) return;
 
         try {
             final String jwt = authHeader.substring(7);
@@ -85,5 +82,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception exception) {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
+    }
+
+    @Nullable
+    private static String extractToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return null;
+        }
+        return authHeader;
     }
 }

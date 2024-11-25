@@ -33,3 +33,5 @@ build/
 .vscode/
 ### ENV ###
 *.env
+### ACCOUNT TEST TXT ###
+src/main/resources/account_request.txt
