@@ -1,115 +1,188 @@
 package com.normdevstorm.commerce_platform.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.normdevstorm.commerce_platform.entity.Payload;
 import com.normdevstorm.commerce_platform.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ClaimsBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import com.normdevstorm.commerce_platform.exception.custom.exception.CustomJwtException;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
 
 @Service
 @Slf4j
 public class JwtService {
-    //create a secret key then to keep it private
-        //tools: https://asecuritysite.com/encryption/plain
-    private static final String SECRET = "e5b38645d5a525cefb685d1e918fb87989324eadd1c7d231622935a347773634";
-    // Generates a JWT token for the given userName.
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
-    @Value("${security.jwt.expiration-time}")
-    private long jwtExpiration;
+    @Value("${security.jwt.access-token-expiration-time}")
+    private long accessTokenExpiration;
+    @Value("${security.jwt.refresh-token-expiration-time}")
+    private long refreshTokenExpiration;
+    private final KeyService keyService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+
+    @Autowired
+    public JwtService(KeyService keyService) {
+        this.keyService = keyService;
     }
+    //create a secret key then to keep it private
+    //tools: https://asecuritysite.com/encryption/plain
+    /*
+        Implementing JWT with key pairs + access - refresh token
+     */
+    // generate key pairs
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
-    }
-
-    public long getExpirationTime() {
-        return jwtExpiration;
-    }
-
-    private String buildToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails,
-            long expiration
-    ) {
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-    public boolean isTokenValid(String token, String requestUsername) {
-        final String username = extractUsername(token);
-        return (username.equals(requestUsername)) && !isTokenExpired(token);
-    }
-
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public User claimUserFromToken() {
+    public Map<String, String> generateKeyPair() {
+        KeyPairGenerator keyPairGenerator = null;
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User user = ((User) authentication.getPrincipal());
-            return user;
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw e;
+            keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Can not generate key pair",e);
+            throw new CustomJwtException("Can not generate key pair", e);
         }
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+
+        // convert keys to PEM (which has header and footer) for storing in database
+            // encode to bytes ->  to string
+        String privateKeyPEM = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+        String publicKeyPEM = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+
+        Map<String, String> keyPairMap = new HashMap<>();
+        keyPairMap.put("privateKey", privateKeyPEM);
+        keyPairMap.put("publicKey", publicKeyPEM);
+
+        return keyPairMap;
+    }
+
+    private String generateJwtToken(Payload payload, String privateKeyPEM, long exprirationMillis) {
+        // convert PEM string format back to PrivateKey again
+        PrivateKey privateKey;
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec( Base64.getDecoder().decode(privateKeyPEM));
+            privateKey = keyFactory.generatePrivate(keySpec);
+            return Jwts.builder().claims(objectMapper.convertValue(payload, Map.class)).subject(payload.getUsername()).issuedAt(new Date(System.currentTimeMillis())).expiration(new Date(System.currentTimeMillis() + exprirationMillis )).signWith(privateKey, Jwts.SIG.RS256).compact();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Can not generate token");
+            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException e) {
+            log.error("Can not generate token");
+            throw new RuntimeException(e);
+        }
+
+    }
+    //generate access and refresh
+
+    public String generateAccessToken(Payload payload, String privateKeyPEM){
+        return generateJwtToken(payload, privateKeyPEM, accessTokenExpiration);
+    }
+
+    public String generateRefreshToken(Payload payload, String privateKeyPEM){
+        return generateJwtToken(payload, privateKeyPEM, refreshTokenExpiration);
+    }
+
+    private static PublicKey convertPublicKeyFromPEM(String publicKeyPEM, KeyFactory keyFactory) throws InvalidKeySpecException {
+        PublicKey publicKey;
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyPEM));
+        publicKey = keyFactory.generatePublic(keySpec);
+        return publicKey;
+    }
+
+    private Claims extractClaim(String token, boolean isRefreshToken) {
+        Claims claims = Jwts.parser()
+                .setSigningKeyResolver(
+                        new SigningKeyResolverAdapter() {
+                            @Override
+                            public Key resolveSigningKey(JwsHeader header, Claims claims) {
+                                String username = claims.get("username", String.class);
+                                PublicKey publicKey = keyService.getPublicKeyByUsername(username);
+                                return publicKey;
+                            }
+                        }
+                )
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        int version = claims.get("version", Integer.class);
+        if(verifyTokenVersion(isRefreshToken, version,claims)){
+            return claims;
+        }
+        return null;
+    }
+
+
+
+    public String extractUsername(String token, boolean isRefreshToken) {
+        String username = null;
+        try {
+            username = Objects.requireNonNull(extractClaim(token, isRefreshToken)).getSubject();
+        } catch (NullPointerException e) {
+            log.error("Can not extract username from claim, username = null !!!");
+            throw new BadCredentialsException("Authentication failed !!!");        }
+        return username;
+    }
+
+    private Date extractExpiration(String token, boolean isRefreshToken) {
+        Claims claims = extractClaim(token, isRefreshToken);
+        if(claims != null){
+            return claims.getExpiration();
+        } else {
+            log.error("Can not resolve token!!!");
+            throw new CustomJwtException("Claim is null due to token resolve failure", new NullPointerException());
+        }
+    }
+
+    private boolean verifyTokenVersion(boolean isRefreshToken,int version, Claims claims) {
+        try {
+            if(isRefreshToken){
+                return version == keyService.getKeyByUsername(claims.getSubject()).getRefreshTokenVersion();
+            }
+            return version == keyService.getKeyByUsername(claims.getSubject()).getAccessTokenVersion();
+        } catch (Exception e) {
+            log.error("Can not verify token version !!!");
+            return false;
+        }
+    }
+
+
+    public boolean isTokenValid(String token, boolean isRefreshToken) {
+        return !isTokenExpired(token, isRefreshToken);
+    }
+
+    private boolean isTokenExpired(String token, boolean isRefreshToken) {
+        return extractExpiration(token,isRefreshToken ).before(new Date());
+    }
+
+
+    public User getUserFromContext() {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            return ((User) authentication.getPrincipal());
+    }
+
+    public void updateRefreshToken(String refreshToken, UUID userId){
+        keyService.updateRefreshToken(refreshToken, userId);
+    }
+
+    public void updateRefreshTokenVersion(UUID userId, int refreshTokenVersion){
+        keyService.updateRefreshTokenVersion(userId, refreshTokenVersion);
+    }
+
+    public void updateAccessTokenVersion(UUID userId, int accessTokenVersion){
+        keyService.updateAccessTokenVersion(userId, accessTokenVersion);
     }
 }

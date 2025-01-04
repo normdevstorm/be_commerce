@@ -1,10 +1,16 @@
 package com.normdevstorm.commerce_platform.service;
 
+import com.normdevstorm.commerce_platform.dto.auth.refresh_token.RefreshTokenResponse;
+import com.normdevstorm.commerce_platform.dto.auth.signup.SignUpResponseDto;
 import com.normdevstorm.commerce_platform.dto.user.UserRequestDto;
+import com.normdevstorm.commerce_platform.entity.Key;
+import com.normdevstorm.commerce_platform.entity.Payload;
 import com.normdevstorm.commerce_platform.entity.User;
+import com.normdevstorm.commerce_platform.mapper.auth.signup.SignUpMapper;
 import com.normdevstorm.commerce_platform.mapper.user.UserRequestMapper;
 import com.normdevstorm.commerce_platform.repository.UserRepository;
 import com.normdevstorm.commerce_platform.util.UtilsManager;
+import io.jsonwebtoken.Claims;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,12 +21,12 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 @Slf4j
 @Transactional
@@ -33,39 +39,72 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRequestMapper userRequestMapper;
+    private final JwtService jwtService;
+
+    private final SignUpMapper signUpMapper;
 
     private JavaMailSenderImpl mailSender;
+    private KeyService keyService;
+
 
     @Autowired
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder,
-            UserRequestMapper userRequestMapper, JavaMailSenderImpl javaMailSender) {
+            UserRequestMapper userRequestMapper, JavaMailSenderImpl javaMailSender,
+            JwtService jwtService,
+            SignUpMapper signUpMapper,
+            KeyService keyService
+            ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRequestMapper = userRequestMapper;
         this.mailSender = javaMailSender;
+        this.jwtService = jwtService;
+        this.signUpMapper = signUpMapper;
+        this.keyService = keyService;
     }
 
-    public User signup(UserRequestDto input) {
-        User user = userRequestMapper.toUser(input);
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        return userRepository.save(user);
+    public SignUpResponseDto signup(UserRequestDto input) {
+        /*
+            Register info -> create key pairs -> save users -> build payload -> create token -> return token + user
+         */
+        User userRequest = userRequestMapper.toUser(input);
+        userRequest.setPassword(passwordEncoder.encode(input.getPassword()));
+        User user = userRepository.save(userRequest);
+        // generate key pair
+        Map<String , String> keyPair = jwtService.generateKeyPair();
+        String publicKeyPEM = keyPair.get("publicKey");
+        String privateKeyPEM = keyPair.get("privateKey");
+        // set initial version
+        int version = 0;
+        Payload payload = Payload.builder().version(0).id(user.getUserId()).role(user.getRole().name()).username(user.getUsername()).version(version).build();
+        String accessToken = jwtService.generateAccessToken(payload, privateKeyPEM);
+        String refreshToken =  jwtService.generateRefreshToken(payload, privateKeyPEM);
+        // save key
+        Key key = Key.builder().publicKey(publicKeyPEM).privateKey(privateKeyPEM).user(user).id(user.getUserId()).refreshTokenVersion(version).accessTokenVersion(version).refreshToken(refreshToken).publicKey(publicKeyPEM).privateKey(privateKeyPEM).build();
+        keyService.saveKey(key);
+        return signUpMapper.toSignUpResponseDto(user, accessToken, refreshToken);
     }
 
-    public User authenticate(UserRequestDto input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getUsername(),
-                        input.getPassword()
-                )
-        );
+    public RefreshTokenResponse refreshToken(String refreshToken){
+        String username = jwtService.extractUsername(refreshToken, true);
+        Key key = keyService.getKeyByUsername(username);
+        if(key == null){
+            throw new RuntimeException("Invalid refresh token");
+        }
+        String privateKeyPEM = key.getPrivateKey();
+        int accessTokenVersion = key.getAccessTokenVersion();
 
-        return userRepository.findByUsername(input.getUsername())
-                .orElseThrow();
+        Payload payloadForAccessToken = Payload.builder().version(accessTokenVersion + 1).id(key.getId()).role(key.getUser().getRole().name()).username(key.getUser().getUsername()).build();
+        String accessToken = jwtService.generateAccessToken(payloadForAccessToken, privateKeyPEM);
+        key.setAccessTokenVersion(accessTokenVersion + 1);
+        keyService.saveKey(key);
+        return RefreshTokenResponse.builder().accessToken(accessToken).refreshToken(key.getRefreshToken()).build();
     }
+
 
     //forgot password feature
     private void updateResetPasswordToken(String token, String email) throws RuntimeException {
@@ -114,7 +153,6 @@ public class AuthenticationService {
         mailSender.send(message);
     }
 
-    //    @PostMapping("/forgot_password")]
     @Async
     public String processForgotPassword(HttpServletRequest request) {
         String email = request.getParameter("email");

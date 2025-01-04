@@ -2,10 +2,13 @@ package com.normdevstorm.commerce_platform.service;
 
 import com.normdevstorm.commerce_platform.dto.user.UserRequestDto;
 import com.normdevstorm.commerce_platform.dto.user.login.UserResponseDto;
+import com.normdevstorm.commerce_platform.entity.Key;
+import com.normdevstorm.commerce_platform.entity.Payload;
 import com.normdevstorm.commerce_platform.entity.User;
 import com.normdevstorm.commerce_platform.enums.Role;
 import com.normdevstorm.commerce_platform.mapper.user.UserRequestMapper;
 import com.normdevstorm.commerce_platform.mapper.user.UserResponseMapper;
+import com.normdevstorm.commerce_platform.repository.KeyRepository;
 import com.normdevstorm.commerce_platform.repository.UserRepository;
 import com.normdevstorm.commerce_platform.util.UtilsManager;
 import jakarta.mail.MessagingException;
@@ -32,6 +35,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -44,6 +49,8 @@ public class UserService {
     private final JavaMailSenderImpl mailSender;
     private final PasswordEncoder passwordEncoder;
 
+    private final KeyRepository keyRepository;
+
     @Autowired
     public UserService(
             UserRepository userRepository,
@@ -51,7 +58,8 @@ public class UserService {
             UserRequestMapper userRequestMapper,
             JwtService jwtService,
             JavaMailSenderImpl mailSender,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            KeyRepository keyRepository
     ) {
         this.userRepository = userRepository;
         this.userResponseMapper = userResponseMapper;
@@ -59,6 +67,7 @@ public class UserService {
         this.jwtService = jwtService;
         this.mailSender = mailSender;
         this.passwordEncoder = passwordEncoder;
+        this.keyRepository= keyRepository;
     }
 
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
@@ -66,7 +75,14 @@ public class UserService {
         return userResponseMapper.toUserDto(user);
     }
 
-    public void saveUser(User user) {
+    public void saveUser(User user) throws NoSuchAlgorithmException {
+        Map<String, String> keyPair = jwtService.generateKeyPair();
+        // TODO: inspect version later on
+        final String refreshToken = jwtService.generateRefreshToken( Payload.builder().role(user.getRole().name()).username(user.getUsername()).version(1).build(), keyPair.get("private_key"));
+         // store keys for user
+        Key key = Key.builder().privateKey(keyPair.get("private_key")).publicKey("public_key").user(user).refreshToken(refreshToken).build();
+        keyRepository.save(key);
+
         User sample = User.builder().username("normdev_@12345").firstName("nguyen").lastName("nam").password(passwordEncoder.encode("Aa1!aaBb")).phoneNumber("0392955340").role(Role.USER).build();
         userRepository.save(sample);
         userRepository.save(user);
@@ -105,8 +121,6 @@ public class UserService {
     }
 
     //forgot password
-//    private
-
     private User claimUserFromToken() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

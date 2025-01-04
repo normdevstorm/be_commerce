@@ -1,5 +1,4 @@
 package com.normdevstorm.commerce_platform.entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.normdevstorm.commerce_platform.config.validate.CustomPasswordValidation;
 import com.normdevstorm.commerce_platform.config.validate.CustomPhoneNumValidation;
@@ -65,6 +64,9 @@ public class User implements UserDetails{
     private Set<Transaction> transactions;
 //    @Column(name = "reset_password_token")
     private String resetPasswordToken;
+    @OneToOne(mappedBy = "user", orphanRemoval = true,fetch = FetchType.LAZY)
+    private Key key;
+
     @Builder
     public User(final String username, final String password, final Role role, final @NonNull String firstName, final @NonNull String lastName, final @NonNull String phoneNumber, @jakarta.annotation.Nullable final Set<Address> address, @jakarta.annotation.Nullable final Set<Payment> payments, @Nullable String email) {
         this.username = username;
@@ -80,7 +82,7 @@ public class User implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return role.getAuthorities();
     }
 
     @Override

@@ -2,23 +2,28 @@ package com.normdevstorm.commerce_platform.controller.product;
 
 import com.normdevstorm.commerce_platform.dto.product.ProductRequestDTO;
 import com.normdevstorm.commerce_platform.dto.product.ProductResponseDTO;
+import com.normdevstorm.commerce_platform.enums.Permission;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import com.normdevstorm.commerce_platform.service.ProductService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
+
 @RestController
 @RequestMapping("/product")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Product")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
-
+    @PreAuthorize("#{hasAuthority(T(com.normdevstorm.commerce_platform.enums.Permission).PRODUCT_READ.getPermission())}")
     @GetMapping("/get")
     public ResponseEntity<GenericResponse<Set<ProductResponseDTO>>> getProducts(){
         Set<ProductResponseDTO> productResponseDTOSet = productService.getProducts();

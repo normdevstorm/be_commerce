@@ -1,21 +1,14 @@
 package com.normdevstorm.commerce_platform.service.impl;
 
 import com.normdevstorm.commerce_platform.dto.cart.CartProductItemResponseDto;
-import com.normdevstorm.commerce_platform.dto.cart.CartUpdateDto;
-import com.normdevstorm.commerce_platform.dto.product.ProductResponseDTO;
 import com.normdevstorm.commerce_platform.entity.Cart;
-import com.normdevstorm.commerce_platform.entity.CartId;
-import com.normdevstorm.commerce_platform.entity.Product;
 import com.normdevstorm.commerce_platform.entity.User;
 import com.normdevstorm.commerce_platform.mapper.cart.CartResponseMapper;
 import com.normdevstorm.commerce_platform.mapper.product.ProductResponseMapper;
 import com.normdevstorm.commerce_platform.repository.CartRepository;
 import com.normdevstorm.commerce_platform.service.*;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -31,19 +24,22 @@ public class CartServiceImplementation implements CartService {
     private final CartResponseMapper cartResponseMapper;
     private final ProductResponseMapper productResponseMapper;
 
+    private final  JwtService jwtService;
+
 
     @Autowired
-    private CartServiceImplementation(CartRepository cartRepository, CartResponseMapper cartResponseMapper, ProductResponseMapper productResponseMapper) {
+    private CartServiceImplementation(CartRepository cartRepository, CartResponseMapper cartResponseMapper, ProductResponseMapper productResponseMapper, JwtService jwtService) {
         this.cartRepository = cartRepository;
         this.cartResponseMapper = cartResponseMapper;
         this.productResponseMapper = productResponseMapper;
+        this.jwtService = jwtService;
     }
 
     @Override
     public Set<CartProductItemResponseDto> getAllProductsFromCart() {
         ///todo: note how to get the token from the sec context: after compeleting all ur endpoints
         try {
-            User user = claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             Cart cart = new Cart();
             Set<Cart> cartProducts = cartRepository.findByCartId_User_UserId(user.getUserId());
             Set<CartProductItemResponseDto> cartProductItemResponseDtoSet = new LinkedHashSet<>();
@@ -60,7 +56,7 @@ public class CartServiceImplementation implements CartService {
 
     @Override
     public Set<CartProductItemResponseDto> addToCart(Set<CartProductItemResponseDto> cartProductRequestItems) {
-        User user = claimUserFromToken();
+        User user = jwtService.getUserFromContext();
         Set<CartProductItemResponseDto> currentCart = getAllProductsFromCart();
         Set<Cart> addedProducts = new LinkedHashSet<>();
 
@@ -82,7 +78,7 @@ public class CartServiceImplementation implements CartService {
     @Override
     public Set<CartProductItemResponseDto> updateCart(Set<CartProductItemResponseDto> cartProductUpdateItems) {
         try {
-            User user = claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             for (CartProductItemResponseDto cartUpdateItem : cartProductUpdateItems
             ) {
                 Cart cart = cartResponseMapper.toCartFromCartProductItemResponseDto(cartUpdateItem, user);
@@ -99,7 +95,7 @@ public class CartServiceImplementation implements CartService {
     public Set<CartProductItemResponseDto> removeFromCart(Set<String> deleteProductIds) {
         //handle null id case later
         try {
-            User user = claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             Set<UUID> deleteUUIDs = deleteProductIds.stream().map(id -> UUID.fromString(id)).collect(Collectors.toSet()); ;
             for (UUID deleteProductId : deleteUUIDs
             ) {
@@ -115,7 +111,7 @@ public class CartServiceImplementation implements CartService {
     @Override
     public String clearCart() {
         try {
-            User user = claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             cartRepository.deleteByCartId_User_UserId(user.getUserId());
             return "Cart has been cleared !!!";
         } catch (Exception e) {
@@ -123,15 +119,5 @@ public class CartServiceImplementation implements CartService {
         }
     }
 
-    private User claimUserFromToken() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User user = ((User) authentication.getPrincipal());
-            return user;
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw e;
-        }
-    }
 
 }

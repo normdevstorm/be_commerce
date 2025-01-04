@@ -1,6 +1,7 @@
-package com.normdevstorm.commerce_platform.config.security;
-
-import com.normdevstorm.commerce_platform.exception.GlobalExceptionHandler;
+package com.normdevstorm.commerce_platform.config.security.filter;
+import com.normdevstorm.commerce_platform.entity.User;
+import com.normdevstorm.commerce_platform.exception.custom.handler.GlobalExceptionHandler;
+import com.normdevstorm.commerce_platform.repository.UserRepository;
 import com.normdevstorm.commerce_platform.service.JwtService;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.annotation.Nullable;
@@ -8,65 +9,56 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-
 import java.io.IOException;
 
-/// this one is also called as middlleware
 @Slf4j
 @Component
-// retrieve the JWT token in the header “Authorization”, and validate it:
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final HandlerExceptionResolver handlerExceptionResolver;
-
     private final GlobalExceptionHandler globalExceptionHandler;
-
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
-    // Method to lazily fetch the UserService bean from the ApplicationContext
-    // This is done to avoid Circular Dependency issues
+    private final UserRepository userRepository;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            UserDetailsService userDetailsService,
+            UserRepository userRepository,
             HandlerExceptionResolver handlerExceptionResolver,
             GlobalExceptionHandler globalExceptionHandler
     ) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.globalExceptionHandler = globalExceptionHandler;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = extractToken(request, response, filterChain);
         if (authHeader == null) return;
 
         try {
             final String jwt = authHeader.substring(7);
-            final String userEmail = jwtService.extractUsername(jwt);
 
+            final String username = jwtService.extractUsername(jwt, false);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (userEmail != null && authentication == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if (username != null && authentication == null) {
+                User user = userRepository.findByUsername(username).orElseThrow();
 
-                if (jwtService.isTokenValid(jwt, userDetails)) {
+                if (jwtService.isTokenValid(jwt, false)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                            user,
                             null,
-                            userDetails.getAuthorities()
+                            user.getAuthorities()
                     );
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

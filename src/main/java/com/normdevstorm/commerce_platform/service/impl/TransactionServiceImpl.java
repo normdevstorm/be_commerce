@@ -40,7 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponseDto createTransaction(TransactionRequestDto transactionRequestDto) {
         ///todo: replace with this method in other services as well
         try {
-            User user = jwtService.claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             Transaction newTransaction = transactionRequestMapper.toTransaction(transactionRequestDto, user);
             return transactionResponseMapper.toDto(transactionRepository.save(newTransaction));
         } catch (Exception e) {
@@ -66,7 +66,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Set<TransactionResponseDto> getAllTransactions() {
         try {
-            User user = jwtService.claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             return transactionRepository.findByUser_UserId(user.getUserId()).stream().map(transactionResponseMapper::toDto).collect(Collectors.toSet());
         } catch (Exception e) {
             log.error("Get all transactions error:", e);
@@ -77,7 +77,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Set<TransactionResponseDto> getAllTransactionsBeforeTime(LocalDateTime time) {
         try {
-            User user = jwtService.claimUserFromToken();
+            User user = jwtService.getUserFromContext();
             Set<Transaction> transactions = transactionRepository.findByCreateAtBefore(time, user.getUserId());
             return  transactions.stream().map(transactionResponseMapper::toDto).collect(Collectors.toSet());
         } catch (Exception e) {
