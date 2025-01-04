@@ -32,6 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 ### ENV ###
-*.env
+#*.env
 ### ACCOUNT TEST TXT ###
 src/main/resources/account_request.txt
