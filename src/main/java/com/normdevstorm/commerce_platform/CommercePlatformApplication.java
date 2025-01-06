@@ -10,4 +10,5 @@ public class CommercePlatformApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CommercePlatformApplication.class, args);
 	}
+
 }
