@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 ### ENV ###
-#*.env
+*.env
 ### ACCOUNT TEST TXT ###
 src/main/resources/account_request.txt
+### SHELL SCRIPTS ###
+build-image.sh
+run-image.sh
