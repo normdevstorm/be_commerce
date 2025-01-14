@@ -67,7 +67,7 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081/normdevstorm", "https://www.sandbox.paypal.com", "https://api.normdevstorm.online/normdevstorm/*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8081/normdevstorm", "https://www.sandbox.paypal.com", "https://api.normdevstorm.online/normdevstorm/*", "http://api.normdevstorm.online/normdevstorm/*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "DELTETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
