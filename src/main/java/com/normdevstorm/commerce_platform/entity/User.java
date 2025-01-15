@@ -24,7 +24,7 @@ import java.util.UUID;
 @Builder
 @Getter
 @Setter
-
+@Table(name = "user")
 public class User implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,7 +42,6 @@ public class User implements UserDetails{
     private String email;
     //    @Column(columnDefinition = "default 'admin'")
     @Enumerated(EnumType.STRING)
-    @ColumnDefault(value = "USER")
     private Role role;
     @NonNull
     @Size(max = 50, message = "Name should not exceed 50 character length")
