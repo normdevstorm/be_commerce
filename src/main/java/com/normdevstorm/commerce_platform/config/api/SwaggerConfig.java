@@ -25,11 +25,11 @@ import java.util.List;
         in = SecuritySchemeIn.HEADER)
 public class SwaggerConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-        Server server = new Server();
-        server.setUrl("https://api.normdevstorm.online/normdevstorm");
-        return new OpenAPI().servers(List.of(server));
-    }
+//    @Bean
+//    public OpenAPI customOpenAPI() {
+//        Server server = new Server();
+//        server.setUrl("https://api.normdevstorm.online/normdevstorm");
+//        return new OpenAPI().servers(List.of(server));
+//    }
 
 }
