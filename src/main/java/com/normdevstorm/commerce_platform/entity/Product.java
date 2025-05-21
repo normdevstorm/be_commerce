@@ -27,7 +27,7 @@ public class Product {
 //    @Enumerated(EnumType.STRING)
     private Category category;
 //    @Nullable
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "brandId")
     private Brand brand;
     private long stockQuantity;

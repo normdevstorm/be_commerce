@@ -3,7 +3,7 @@ services:
   app:
     image: normdevstorm/commerce-platform:0.0.1
     ports:
-      - "8090:8080"
+      - "8080:8080"
     env_file:
       - .env
     depends_on:
@@ -15,7 +15,7 @@ services:
       MYSQL_ROOT_PASSWORD: nam123
       MYSQL_DATABASE: commerce
     ports:
-      - "3308:3306"
+      - "3306:3306"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 #networks:

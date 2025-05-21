@@ -1,6 +1,4 @@
 package com.normdevstorm.commerce_platform.service;
-
-
 import com.normdevstorm.commerce_platform.dto.brand.BrandRequestDto;
 import com.normdevstorm.commerce_platform.dto.product.ProductRequestDTO;
 import com.normdevstorm.commerce_platform.dto.product.ProductResponseDTO;
@@ -12,18 +10,18 @@ import com.normdevstorm.commerce_platform.mapper.brand.BrandRequestMapper;
 import com.normdevstorm.commerce_platform.mapper.product.ProductRequestMapper;
 import com.normdevstorm.commerce_platform.mapper.product.ProductResponseMapper;
 import com.normdevstorm.commerce_platform.mapper.review.ReviewRequestMapper;
-import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import com.normdevstorm.commerce_platform.repository.BrandRepository;
 import com.normdevstorm.commerce_platform.repository.ProductRepository;
 import com.normdevstorm.commerce_platform.repository.ReviewRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +46,8 @@ public class ProductService {
     private ReviewRequestMapper reviewRequestMapper;
     @Autowired
     private BrandRequestMapper brandRequestMapper;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public Set<ProductResponseDTO> addProducts(Set<ProductRequestDTO> products) {
         ///todo: resolve unhappy case later on : detect if the product has been existed in db
@@ -55,14 +55,23 @@ public class ProductService {
             return productRequestMapper.toProductWithBrandAndReviews(productRequestDTO, findBrand(productRequestDTO, false), findReviewSet(productRequestDTO));
         }).collect(Collectors.toSet());
         Set<ProductResponseDTO> productResponseDTOSet = productRepository.saveAll(productSet).stream().map(productResponseMapper::toProductResponseDTO).collect(Collectors.toSet());
-//        return ResponseEntity.ok(GenericResponse.<Set<ProductResponseDTO>>builder().success(true).data(productResponseDTOSet).message("Add products successfully!!!").build());
+
+        String redisProductListKey = "products";
+        redisTemplate.delete(redisProductListKey);
+
         return productResponseDTOSet;
     }
+
 
     public ProductResponseDTO updateProduct(String productId, ProductRequestDTO productRequestDTO) {
         try {
             Product product = productRepository.findById(UUID.fromString(productId)).get();
-            return productResponseMapper.toProductResponseDTO(productRepository.save(productRequestMapper.partialUpdateWithBrandAndReviews(productRequestDTO, findBrand(productRequestDTO, true), findReviewSet(productRequestDTO), product)));
+            ProductResponseDTO productResponseDTO = productResponseMapper.toProductResponseDTO(productRepository.save(productRequestMapper.partialUpdateWithBrandAndReviews(productRequestDTO, findBrand(productRequestDTO, true), findReviewSet(productRequestDTO), product)));
+
+            String redisProductKey = "product::" + productId;
+            redisTemplate.opsForValue().set(redisProductKey, productResponseDTO, 2, TimeUnit.MINUTES);
+
+            return productResponseDTO;
         } catch (Exception e) {
             log.error(e.toString());
             throw new RuntimeException("Product not found !!!");
@@ -73,7 +82,7 @@ public class ProductService {
         try {
              Product product = productRepository.findById(UUID.fromString(productId)).get();
              productRepository.deleteById(product.getProductId());
-            return "Delete product successfully!!!";
+             return "Delete product successfully!!!";
         } catch (Exception e) {
             log.error(e.toString());
             return "Product not found !!! Delete failed !!!";
@@ -81,14 +90,32 @@ public class ProductService {
     }
 
     public Set<ProductResponseDTO> getProducts() {
-        Set<ProductResponseDTO> productSet = productRepository.findAll().stream().map(productResponseMapper::toProductResponseDTO).collect(Collectors.toSet());
-        return productSet;
+        String key = "products";
+        Set<ProductResponseDTO> cachedData = (Set<ProductResponseDTO>) redisTemplate.opsForValue().get(key);
+
+        if(cachedData == null){
+            log.info("Fetching products from database - cache miss");
+            Set<ProductResponseDTO> productSet = productRepository.findAll().stream().map(productResponseMapper::toProductResponseDTO).collect(Collectors.toSet());
+            redisTemplate.opsForValue().set(key, productSet, 2 , TimeUnit.MINUTES);
+            return productSet;
+        } else{
+            return  cachedData;
+        }
+
     }
 
+    public ProductResponseDTO getProductById(String productId) {
+        String redisProductKey = "product::" + productId;
+        ProductResponseDTO redisCachedData = (ProductResponseDTO) redisTemplate.opsForValue().get(redisProductKey);
 
-    public ProductResponseDTO getProductById(UUID productId){
-        ///exception handling later on w/ specific typa errors
-        return productResponseMapper.toProductResponseDTO(productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found")));
+        if (redisCachedData == null) {
+            Product product = productRepository.findById(UUID.fromString(productId)).orElseThrow();
+            ProductResponseDTO productResponseDTO = productResponseMapper.toProductResponseDTO(product);
+            redisTemplate.opsForValue().set(redisProductKey, productResponseDTO, 2, TimeUnit.MINUTES);
+            return productResponseDTO;
+        }
+        else
+            return redisCachedData;
     }
     private Brand findBrand(ProductRequestDTO productRequestDTO, boolean isUpdate) {
         BrandRequestDto brandRequestDto = productRequestDTO.getBrand();

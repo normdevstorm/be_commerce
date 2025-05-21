@@ -8,6 +8,7 @@ import com.normdevstorm.commerce_platform.service.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +24,17 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-    @PreAuthorize("#{hasAuthority(T(com.normdevstorm.commerce_platform.enums.Permission).PRODUCT_READ.getPermission())}")
+    @PreAuthorize("hasAuthority('product:read')")
     @GetMapping("/get")
     public ResponseEntity<GenericResponse<Set<ProductResponseDTO>>> getProducts(){
         Set<ProductResponseDTO> productResponseDTOSet = productService.getProducts();
         return ResponseEntity.ok(GenericResponse.<Set<ProductResponseDTO>>builder().success(true).data(productResponseDTOSet).message("Add products successfully!!!").build());
+    }
+
+    @GetMapping("/get/{productId}")
+    public ResponseEntity<GenericResponse<ProductResponseDTO>> getProductById(@PathVariable String productId){
+        ProductResponseDTO productResponseDTO = productService.getProductById(productId);
+        return ResponseEntity.ok(GenericResponse.<ProductResponseDTO>builder().success(true).data(productResponseDTO).build());
     }
 
     @PutMapping("/add")
