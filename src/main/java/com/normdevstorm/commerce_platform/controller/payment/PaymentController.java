@@ -6,7 +6,7 @@ import com.normdevstorm.commerce_platform.service.PayPalService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/payment")
-@Slf4j
+@Log4j2
 public class PaymentController {
     @Value("${application.paypal.success_url}")
     private String SUCCESS_URL;

@@ -1,0 +1,57 @@
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN" >
+            %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %username{30} - %msg%n
+        </Property>
+        <Property name="LOG_DIR">logs</Property>
+        <Property name="LOG_FILE">app.log</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+<!--            <PatternLayout pattern="${LOG_PATTERN}">-->
+<!--            </PatternLayout>-->
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %X{userId} %msg%n}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=cyan, TRACE=white}"/>
+        </Console>
+
+        <RollingFile name="File" fileName="${LOG_DIR}/${LOG_FILE}" filePattern="${LOG_DIR}/app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}">
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+        <!-- JSON Logging (for ELK search) -->
+
+        <File name="JsonFile" fileName="${LOG_DIR}/app-json.log">
+            <JsonLayout complete="true" compact="true"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <!-- Root Logger (default) -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+
+        <Logger name="org.hibernate.sql" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Logger name="org.springframework.data.redis" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Logger name="org.springframework.boot.autoconfigure.orm" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <!-- Spring Profile-Specific Logging -->
+        <!-- Custom logger for a package-->
+        <Logger name="com.normdevstorm.commerce_platform" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+            <AppenderRef ref="JsonFile"/>
+        </Logger>
+    </Loggers>
+</Configuration>

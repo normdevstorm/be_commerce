@@ -1,5 +1,6 @@
 package com.normdevstorm.commerce_platform.controller.product;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.normdevstorm.commerce_platform.dto.product.ProductRequestDTO;
 import com.normdevstorm.commerce_platform.dto.product.ProductResponseDTO;
 import com.normdevstorm.commerce_platform.enums.Permission;
@@ -26,7 +27,7 @@ public class ProductController {
     private ProductService productService;
     @PreAuthorize("hasAuthority('product:read')")
     @GetMapping("/get")
-    public ResponseEntity<GenericResponse<Set<ProductResponseDTO>>> getProducts(){
+    public ResponseEntity<GenericResponse<Set<ProductResponseDTO>>> getProducts() throws JsonProcessingException {
         Set<ProductResponseDTO> productResponseDTOSet = productService.getProducts();
         return ResponseEntity.ok(GenericResponse.<Set<ProductResponseDTO>>builder().success(true).data(productResponseDTOSet).message("Add products successfully!!!").build());
     }

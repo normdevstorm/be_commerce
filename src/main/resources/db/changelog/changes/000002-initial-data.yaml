@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: normdevstorm
+      changes:
+        - sqlFile:
+            relativeToChangelogFile: false
+            path: data/initial_data.sql
+            splitStatements: false
+            endDelimiter: ";"

@@ -5,7 +5,8 @@ import com.normdevstorm.commerce_platform.entity.Payload;
 import com.normdevstorm.commerce_platform.entity.User;
 import com.normdevstorm.commerce_platform.exception.custom.exception.CustomJwtException;
 import io.jsonwebtoken.*;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,7 +21,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
 @Service
-@Slf4j
+@Log4j2
 public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
@@ -104,20 +105,25 @@ public class JwtService {
     }
 
     private Claims extractClaim(String token, boolean isRefreshToken) {
-        Claims claims = Jwts.parser()
-                .setSigningKeyResolver(
-                        new SigningKeyResolverAdapter() {
-                            @Override
-                            public Key resolveSigningKey(JwsHeader header, Claims claims) {
-                                String username = claims.get("username", String.class);
-                                PublicKey publicKey = keyService.getPublicKeyByUsername(username);
-                                return publicKey;
+        Claims claims = null;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKeyResolver(
+                            new SigningKeyResolverAdapter() {
+                                @Override
+                                public Key resolveSigningKey(JwsHeader header, Claims claims) {
+                                    String username = claims.get("username", String.class);
+                                    PublicKey publicKey = keyService.getPublicKeyByUsername(username);
+                                    return publicKey;
+                                }
                             }
-                        }
-                )
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                    )
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        }  catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        }
         int version = claims.get("version", Integer.class);
         if(verifyTokenVersion(isRefreshToken, version,claims)){
             return claims;
@@ -133,7 +139,13 @@ public class JwtService {
             username = Objects.requireNonNull(extractClaim(token, isRefreshToken)).getSubject();
         } catch (NullPointerException e) {
             log.error("Can not extract username from claim, username = null !!!");
-            throw new BadCredentialsException("Authentication failed !!!");        }
+            throw new BadCredentialsException("Authentication failed !!!");}
+        catch (ExpiredJwtException e) {
+            ThreadContext.put("userId", "[ userId: " + e.getClaims().get("id", String.class) + " ]");
+            log.error(e.getMessage());
+            ThreadContext.clearMap();
+            throw new CustomJwtException("User not authenticated",e);
+        }
         return username;
     }
 

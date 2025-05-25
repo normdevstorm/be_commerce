@@ -11,7 +11,7 @@ import com.normdevstorm.commerce_platform.repository.TransactionRepository;
 import com.normdevstorm.commerce_platform.service.JwtService;
 import com.normdevstorm.commerce_platform.service.TransactionService;
 import com.normdevstorm.commerce_platform.util.UtilsManager;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 ///todo: handle exceptions
 @Service
-@Slf4j
+@Log4j2
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository  transactionRepository;

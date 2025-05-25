@@ -13,8 +13,9 @@ import com.normdevstorm.commerce_platform.mapper.review.ReviewRequestMapper;
 import com.normdevstorm.commerce_platform.repository.BrandRepository;
 import com.normdevstorm.commerce_platform.repository.ProductRepository;
 import com.normdevstorm.commerce_platform.repository.ReviewRepository;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.logging.LoggersEndpoint;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Log4j2
 @Service
 public class ProductService {
 
@@ -48,6 +49,8 @@ public class ProductService {
     private BrandRequestMapper brandRequestMapper;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+
 
     public Set<ProductResponseDTO> addProducts(Set<ProductRequestDTO> products) {
         ///todo: resolve unhappy case later on : detect if the product has been existed in db
@@ -94,11 +97,13 @@ public class ProductService {
         Set<ProductResponseDTO> cachedData = (Set<ProductResponseDTO>) redisTemplate.opsForValue().get(key);
 
         if(cachedData == null){
-            log.info("Fetching products from database - cache miss");
+//            log.info("Fetching products from database - cache miss");
             Set<ProductResponseDTO> productSet = productRepository.findAll().stream().map(productResponseMapper::toProductResponseDTO).collect(Collectors.toSet());
             redisTemplate.opsForValue().set(key, productSet, 2 , TimeUnit.MINUTES);
+             log.debug("Product list: " +  productSet);
             return productSet;
         } else{
+            log.debug("Product list (From cache): " + cachedData);
             return  cachedData;
         }
 

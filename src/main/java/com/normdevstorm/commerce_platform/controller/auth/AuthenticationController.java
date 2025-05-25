@@ -5,8 +5,8 @@ import com.normdevstorm.commerce_platform.dto.user.UserRequestDto;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import com.normdevstorm.commerce_platform.service.AuthenticationService;
 import com.normdevstorm.commerce_platform.service.JwtService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,9 +15,9 @@ import java.util.Map;
 
 @RequestMapping("/auth")
 @RestController
+@Log4j2
 public class AuthenticationController {
-    Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
-    private final JwtService jwtService;
+    final JwtService jwtService;
 
     private final AuthenticationService authenticationService;
 
@@ -33,7 +33,7 @@ public class AuthenticationController {
          GenericResponse<SignUpResponseDto> genericResponse =  GenericResponse.<SignUpResponseDto>builder().data(signUpResponseDto).success(true).message("Sign up successfully").build();
         return ResponseEntity.ok(genericResponse);
         } catch (ResponseStatusException e){
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         }
     }

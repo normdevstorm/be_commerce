@@ -10,7 +10,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import java.io.IOException;
 
-@Slf4j
+@Log4j2
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final HandlerExceptionResolver handlerExceptionResolver;
@@ -38,6 +39,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.globalExceptionHandler = globalExceptionHandler;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException
+    {
+        log.warn("Should not filter" + request.getServletPath());
+        return request.getServletPath().equals("/auth/signup");
     }
 
     @Override
@@ -64,6 +72,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
+
+                ThreadContext.put("userId", "[ userId: " + user.getUserId() + " ]");
+                log.info("User authenticated");
+                ThreadContext.clearMap();
             }
 
             filterChain.doFilter(request, response);

@@ -8,10 +8,16 @@ import com.normdevstorm.commerce_platform.entity.User;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import com.normdevstorm.commerce_platform.repository.UserRepository;
 import com.normdevstorm.commerce_platform.service.JwtService;
+import com.normdevstorm.commerce_platform.util.ConstantManager;
+import com.normdevstorm.commerce_platform.util.UtilsManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-
+@Log4j2
 // Handle login only
 public class LocalAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -36,6 +42,7 @@ public class LocalAuthenticationFilter extends UsernamePasswordAuthenticationFil
         this.jwtService = jwtService;
         this.userRepository = userRepository;
     }
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         // retrieve username + password
@@ -84,6 +91,7 @@ public class LocalAuthenticationFilter extends UsernamePasswordAuthenticationFil
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(GenericResponse.builder().success(true).data(tokens).message("Login succeeded").build()));
         response.setStatus(HttpServletResponse.SC_OK);
+        UtilsManager.getUserIdContextLog(userPrinciple.getUserId().toString(), "User authenticated");
     }
 
     @Override

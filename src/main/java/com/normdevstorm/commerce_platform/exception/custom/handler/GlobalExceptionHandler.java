@@ -4,6 +4,7 @@ import com.normdevstorm.commerce_platform.exception.custom.exception.CustomJwtEx
 import com.normdevstorm.commerce_platform.model.GenericException;
 import com.normdevstorm.commerce_platform.model.response.GenericResponse;
 import io.jsonwebtoken.MalformedJwtException;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import static org.springframework.web.servlet.function.ServerResponse.status;
 
 @RestController
 @ControllerAdvice
+@Log4j2
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -55,7 +57,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CustomJwtException.class})
     public ResponseEntity<GenericException> customJwtException(CustomJwtException e){
-        GenericException genericResponse = GenericException.builder().status(HttpStatus.BAD_REQUEST).message("INTERNAL SERVER").details("INTERNAL SERVER").build();
+        GenericException genericResponse = GenericException.builder().timestamp(new Date()).status(HttpStatus.UNAUTHORIZED).message(e.getMessage()).details(e.getMessage()).build();
+        log.warn(e.getCause().getMessage());
         return ResponseEntity.status(genericResponse.getStatus()).body(genericResponse);
     }
 
